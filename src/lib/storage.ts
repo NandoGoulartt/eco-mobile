@@ -4,8 +4,17 @@ import { CreateDeliveryDto } from '@/shared';
 const PENDING_DELIVERIES_KEY = '@pending_deliveries';
 const PENDING_COMPLETIONS_KEY = '@pending_completions';
 
+export interface PendingCompletion {
+  workOrderId: string;
+  photoUri: string | null;
+  lat: number;
+  lng: number;
+  accuracy?: number;
+  notes: string;
+  timestamp: string;
+}
+
 export const storageService = {
-  // Salvar entrega pendente (offline)
   savePendingDelivery: async (delivery: CreateDeliveryDto): Promise<void> => {
     try {
       const pending = await AsyncStorage.getItem(PENDING_DELIVERIES_KEY);
@@ -17,7 +26,6 @@ export const storageService = {
     }
   },
 
-  // Obter entregas pendentes
   getPendingDeliveries: async (): Promise<CreateDeliveryDto[]> => {
     try {
       const pending = await AsyncStorage.getItem(PENDING_DELIVERIES_KEY);
@@ -28,7 +36,6 @@ export const storageService = {
     }
   },
 
-  // Remover entrega pendente
   removePendingDelivery: async (index: number): Promise<void> => {
     try {
       const pending = await AsyncStorage.getItem(PENDING_DELIVERIES_KEY);
@@ -40,7 +47,6 @@ export const storageService = {
     }
   },
 
-  // Limpar todas as entregas pendentes
   clearPendingDeliveries: async (): Promise<void> => {
     try {
       await AsyncStorage.removeItem(PENDING_DELIVERIES_KEY);
@@ -49,11 +55,10 @@ export const storageService = {
     }
   },
 
-  // Salvar conclusão pendente (offline)
-  savePendingCompletion: async (completion: any): Promise<void> => {
+  savePendingCompletion: async (completion: PendingCompletion): Promise<void> => {
     try {
       const pending = await AsyncStorage.getItem(PENDING_COMPLETIONS_KEY);
-      const completions = pending ? JSON.parse(pending) : [];
+      const completions: PendingCompletion[] = pending ? JSON.parse(pending) : [];
       completions.push(completion);
       await AsyncStorage.setItem(PENDING_COMPLETIONS_KEY, JSON.stringify(completions));
     } catch (error) {
@@ -61,8 +66,7 @@ export const storageService = {
     }
   },
 
-  // Obter conclusões pendentes
-  getPendingCompletions: async (): Promise<any[]> => {
+  getPendingCompletions: async (): Promise<PendingCompletion[]> => {
     try {
       const pending = await AsyncStorage.getItem(PENDING_COMPLETIONS_KEY);
       return pending ? JSON.parse(pending) : [];
@@ -72,11 +76,10 @@ export const storageService = {
     }
   },
 
-  // Remover conclusão pendente
   removePendingCompletion: async (index: number): Promise<void> => {
     try {
       const pending = await AsyncStorage.getItem(PENDING_COMPLETIONS_KEY);
-      const completions = pending ? JSON.parse(pending) : [];
+      const completions: PendingCompletion[] = pending ? JSON.parse(pending) : [];
       completions.splice(index, 1);
       await AsyncStorage.setItem(PENDING_COMPLETIONS_KEY, JSON.stringify(completions));
     } catch (error) {

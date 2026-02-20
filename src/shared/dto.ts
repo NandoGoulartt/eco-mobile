@@ -1,16 +1,21 @@
-import { DeliveryType, UserRole, WorkOrderType, WorkOrderStatus, CustomerType, DumpsterStatus, VehicleType, VehicleStatus, DriverStatus, CNHCategory } from './enums';
+import {
+  DeliveryType,
+  UserRole,
+  WorkOrderType,
+  WorkOrderStatus,
+  CustomerType,
+  DumpsterStatus,
+  VehicleType,
+  VehicleStatus,
+  DriverStatus,
+  CNHCategory,
+} from './enums';
 
-/**
- * DTO para login (motorista - CPF + senha)
- */
 export interface LoginDto {
   cpf: string;
   password: string;
 }
 
-/**
- * DTO para resposta de autenticação do motorista
- */
 export interface DriverAuthResponseDto {
   accessToken: string;
   user: {
@@ -22,9 +27,6 @@ export interface DriverAuthResponseDto {
   };
 }
 
-/**
- * DTO para resposta de autenticação (compatível com motorista)
- */
 export interface AuthResponseDto {
   accessToken: string;
   user: {
@@ -37,9 +39,6 @@ export interface AuthResponseDto {
   };
 }
 
-/**
- * DTO para criar entrega/retirada
- */
 export interface CreateDeliveryDto {
   type: DeliveryType;
   dumpsterId: string;
@@ -51,26 +50,17 @@ export interface CreateDeliveryDto {
   notes?: string;
 }
 
-/**
- * DTO para atualizar entrega
- */
 export interface UpdateDeliveryDto {
   notes?: string;
   photoUrl?: string;
 }
 
-/**
- * DTO para criar caçamba
- */
 export interface CreateDumpsterDto {
   code: string;
   capacityM3: number;
   status?: DumpsterStatus;
 }
 
-/**
- * DTO para criar obra
- */
 export interface CreateJobSiteDto {
   customerId: string;
   address: string;
@@ -84,9 +74,6 @@ export interface CreateJobSiteDto {
   notes?: string;
 }
 
-/**
- * DTO para criar cliente
- */
 export interface CreateCustomerDto {
   name: string;
   email?: string;
@@ -95,9 +82,6 @@ export interface CreateCustomerDto {
   type?: CustomerType;
 }
 
-/**
- * DTO para criar contato
- */
 export interface CreateContactDto {
   customerId: string;
   name: string;
@@ -106,15 +90,12 @@ export interface CreateContactDto {
   whatsapp?: string;
 }
 
-/**
- * DTO para criar motorista
- */
 export interface CreateDriverDto {
   nomeCompleto: string;
   cpf: string;
   telefone?: string;
   email: string;
-  senha: string; // Será convertido para senhaHash no backend
+  senha: string;
   numeroCNH?: string;
   categoriaCNH?: CNHCategory | string;
   validadeCNH?: Date | string;
@@ -124,9 +105,6 @@ export interface CreateDriverDto {
   empresaId?: string;
 }
 
-/**
- * DTO para criar usuário (admin)
- */
 export interface CreateUserDto {
   email: string;
   username: string;
@@ -135,16 +113,10 @@ export interface CreateUserDto {
   role: UserRole;
 }
 
-/**
- * DTO para resetar senha
- */
 export interface ResetPasswordDto {
   newPassword: string;
 }
 
-/**
- * DTO para criar veículo
- */
 export interface CreateVehicleDto {
   placa: string;
   tipo: VehicleType;
@@ -160,9 +132,6 @@ export interface CreateVehicleDto {
   empresaId?: string;
 }
 
-/**
- * DTO para criar terreno
- */
 export interface CreateYardDto {
   name: string;
   address: string;
@@ -170,9 +139,6 @@ export interface CreateYardDto {
   longitude?: number;
 }
 
-/**
- * DTO para criar pedido de serviço
- */
 export interface CreateWorkOrderDto {
   type: WorkOrderType;
   driverId: string;
@@ -181,13 +147,10 @@ export interface CreateWorkOrderDto {
   jobSiteId?: string;
   yardId?: string;
   scheduledAt?: Date;
-  returnDueDate?: Date; // Data limite para retirada da caçamba do cliente
-  isIndeterminate?: boolean; // Tempo indeterminado (padrão: true)
+  returnDueDate?: Date;
+  isIndeterminate?: boolean;
 }
 
-/**
- * DTO para atualizar ordem de serviço
- */
 export interface UpdateWorkOrderDto {
   type?: WorkOrderType;
   driverId?: string;
@@ -196,13 +159,10 @@ export interface UpdateWorkOrderDto {
   jobSiteId?: string;
   yardId?: string;
   scheduledAt?: Date;
-  returnDueDate?: Date; // Data limite para retirada da caçamba do cliente
-  isIndeterminate?: boolean; // Tempo indeterminado
+  returnDueDate?: Date;
+  isIndeterminate?: boolean;
 }
 
-/**
- * DTO para reordenar ordens de serviço
- */
 export interface ReorderWorkOrdersDto {
   driverId: string;
   orders: Array<{
@@ -211,13 +171,9 @@ export interface ReorderWorkOrdersDto {
   }>;
 }
 
-/**
- * DTO para completar ordem de serviço
- */
 export interface CompleteWorkOrderDto {
   lat: number;
   lng: number;
   accuracy?: number;
   notes?: string;
-  // photo será enviado como multipart/form-data
 }

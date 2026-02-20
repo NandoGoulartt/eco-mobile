@@ -1,6 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'expo-router';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import { authApi } from '@/lib/api';
@@ -37,11 +47,12 @@ export default function LoginScreen() {
         await authStorage.saveCpfForNextLogin(formData.cpf);
       }
       router.replace('/home');
-    } catch (error: any) {
-      Alert.alert(
-        'Erro ao fazer login',
-        error.response?.data?.message || 'Credenciais inválidas',
-      );
+    } catch (error: unknown) {
+      const message =
+        error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+          : undefined;
+      Alert.alert('Erro ao fazer login', message || 'Credenciais inválidas');
     } finally {
       setLoading(false);
     }
@@ -49,7 +60,16 @@ export default function LoginScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <View style={styles.content}>
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.content}>
         <Text style={styles.title}>Gestão de Caçambas</Text>
         <Text style={styles.subtitle}>App do Motorista</Text>
 
@@ -93,7 +113,9 @@ export default function LoginScreen() {
             <Text style={styles.buttonText}>{loading ? 'Entrando...' : 'Entrar'}</Text>
           </TouchableOpacity>
         </View>
-      </View>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -102,6 +124,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
     justifyContent: 'center',
     padding: 20,
   },

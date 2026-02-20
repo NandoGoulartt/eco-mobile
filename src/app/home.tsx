@@ -11,8 +11,8 @@ import { WorkOrder, WorkOrderStatus, WorkOrderType } from '@/shared';
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { user, logout } = useAuth();
-  useSync(); // Sincronizar pendentes ao abrir
+  const { logout } = useAuth();
+  useSync();
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -44,8 +44,8 @@ export default function HomeScreen() {
     loadWorkOrders(true);
   };
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.replace('/login');
   };
 

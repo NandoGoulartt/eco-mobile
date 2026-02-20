@@ -11,9 +11,6 @@ import {
   CNHCategory,
 } from './enums';
 
-/**
- * Usuário do sistema (admin ou motorista)
- */
 export interface User {
   id: string;
   email?: string;
@@ -27,9 +24,6 @@ export interface User {
   updatedAt?: Date;
 }
 
-/**
- * Motorista
- */
 export interface Driver {
   id: string;
   nomeCompleto: string;
@@ -50,9 +44,6 @@ export interface Driver {
   workOrders?: WorkOrder[];
 }
 
-/**
- * Cliente
- */
 export interface Customer {
   id: string;
   name: string;
@@ -66,9 +57,6 @@ export interface Customer {
   contacts?: Contact[];
 }
 
-/**
- * Contato do cliente
- */
 export interface Contact {
   id: string;
   customerId: string;
@@ -81,9 +69,6 @@ export interface Contact {
   customer?: Customer;
 }
 
-/**
- * Obra/Endereço de entrega
- */
 export interface JobSite {
   id: string;
   customerId: string;
@@ -101,9 +86,6 @@ export interface JobSite {
   customer?: Customer;
 }
 
-/**
- * Veículo
- */
 export interface Vehicle {
   id: string;
   placa: string;
@@ -124,9 +106,6 @@ export interface Vehicle {
   drivers?: Driver[];
 }
 
-/**
- * Terreno (para descarte)
- */
 export interface Yard {
   id: string;
   name: string;
@@ -137,13 +116,10 @@ export interface Yard {
   updatedAt: Date;
 }
 
-/**
- * Caçamba
- */
 export interface Dumpster {
   id: string;
-  code: string; // Código identificador (ex: CAC-001)
-  capacityM3: number; // Capacidade em m³
+  code: string;
+  capacityM3: number;
   status: DumpsterStatus;
   currentJobSiteId?: string;
   lastLat?: number;
@@ -156,9 +132,6 @@ export interface Dumpster {
   workOrders?: WorkOrder[];
 }
 
-/**
- * Entrega/Retirada de caçamba (legado)
- */
 export interface Delivery {
   id: string;
   type: DeliveryType;
@@ -168,7 +141,7 @@ export interface Delivery {
   occurredAt: Date;
   latitude: number;
   longitude: number;
-  accuracy?: number; // Precisão do GPS em metros
+  accuracy?: number;
   photoUrl?: string;
   notes?: string;
   createdAt: Date;
@@ -178,17 +151,14 @@ export interface Delivery {
   driver?: Driver;
 }
 
-/**
- * Ordem de Serviço
- */
 export interface WorkOrder {
   id: string;
   type: WorkOrderType;
   status: WorkOrderStatus;
   sequence: number;
   scheduledAt?: Date;
-  returnDueDate?: Date; // Data limite para retirada da caçamba do cliente
-  isIndeterminate: boolean; // Tempo indeterminado (padrão: true)
+  returnDueDate?: Date;
+  isIndeterminate: boolean;
   driverId: string;
   vehicleId: string;
   dumpsterId: string;
@@ -206,9 +176,6 @@ export interface WorkOrder {
   proofs?: WorkOrderProof[];
 }
 
-/**
- * Comprovação de conclusão da ordem de serviço
- */
 export interface WorkOrderProof {
   id: string;
   workOrderId: string;

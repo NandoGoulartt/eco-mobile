@@ -1,13 +1,12 @@
 import { useEffect } from 'react';
+import NetInfo from '@react-native-community/netinfo';
 import { workOrdersApi } from '@/lib/api';
 import { storageService } from '@/lib/storage';
-import NetInfo from '@react-native-community/netinfo';
 
 export function useSync() {
   useEffect(() => {
     const syncPendingCompletions = async () => {
       try {
-        // Verificar conexão
         const netInfo = await NetInfo.fetch();
         if (!netInfo.isConnected) {
           return;
@@ -18,18 +17,16 @@ export function useSync() {
           return;
         }
 
-        // Tentar sincronizar cada conclusão pendente
         for (let i = pending.length - 1; i >= 0; i--) {
           const completion = pending[i];
           try {
             const formData = new FormData();
-            // Só adicionar foto se existir
             if (completion.photoUri) {
               formData.append('photo', {
                 uri: completion.photoUri,
                 type: 'image/jpeg',
                 name: 'photo.jpg',
-              } as any);
+              } as unknown as Blob);
             }
             formData.append('lat', completion.lat.toString());
             formData.append('lng', completion.lng.toString());
@@ -41,11 +38,9 @@ export function useSync() {
             }
 
             await workOrdersApi.complete(completion.workOrderId, formData);
-            // Remover da lista de pendentes
             await storageService.removePendingCompletion(i);
           } catch (error) {
             console.error('Erro ao sincronizar conclusão:', error);
-            // Manter na lista para tentar novamente depois
           }
         }
       } catch (error) {
@@ -53,10 +48,8 @@ export function useSync() {
       }
     };
 
-    // Sincronizar ao montar
     syncPendingCompletions();
 
-    // Sincronizar quando conexão voltar
     const unsubscribe = NetInfo.addEventListener((state) => {
       if (state.isConnected) {
         syncPendingCompletions();

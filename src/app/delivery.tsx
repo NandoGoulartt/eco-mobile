@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import {
   View,
@@ -9,13 +9,15 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocation } from '@/hooks/useLocation';
-import { deliveriesApi, jobSitesApi, dumpstersApi } from '@/lib/api';
+import { deliveriesApi, dumpstersApi, jobSitesApi } from '@/lib/api';
 import { storageService } from '@/lib/storage';
-import { DeliveryType, CreateDeliveryDto } from '@/shared';
+import { CreateDeliveryDto, DeliveryType, Dumpster, JobSite } from '@/shared';
 
 export default function DeliveryScreen() {
   const router = useRouter();
@@ -24,19 +26,16 @@ export default function DeliveryScreen() {
 
   const { getCurrentLocation, loading: locationLoading } = useLocation();
   const [loading, setLoading] = useState(false);
-  const [dumpster, setDumpster] = useState<any>(null);
-  const [jobSites, setJobSites] = useState<any[]>([]);
+  const [dumpster, setDumpster] = useState<Dumpster | null>(null);
+  const [jobSites, setJobSites] = useState<JobSite[]>([]);
   const [selectedJobSite, setSelectedJobSite] = useState<string>('');
   const [deliveryType, setDeliveryType] = useState<DeliveryType | null>(null);
   const [notes, setNotes] = useState('');
   const [photoUri, setPhotoUri] = useState<string | null>(null);
   const [location, setLocation] = useState<{ latitude: number; longitude: number; accuracy?: number } | null>(null);
+  const [initialLoading, setInitialLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [dumpsterRes, jobSitesRes] = await Promise.all([
         dumpstersApi.getById(dumpsterId),
@@ -44,11 +43,22 @@ export default function DeliveryScreen() {
       ]);
       setDumpster(dumpsterRes.data);
       setJobSites(jobSitesRes.data);
-    } catch (error) {
+    } catch {
       Alert.alert('Erro', 'Não foi possível carregar os dados');
       router.back();
+    } finally {
+      setInitialLoading(false);
     }
-  };
+  }, [dumpsterId, router]);
+
+  useEffect(() => {
+    if (!dumpsterId) {
+      Alert.alert('Erro', 'Caçamba não informada');
+      router.back();
+      return;
+    }
+    loadData();
+  }, [dumpsterId, loadData, router]);
 
   const handleGetLocation = async () => {
     const loc = await getCurrentLocation();
@@ -112,14 +122,12 @@ export default function DeliveryScreen() {
         photoUrl: photoUri || undefined,
       };
 
-      // Tentar enviar para API
       try {
         await deliveriesApi.create(deliveryData);
         Alert.alert('Sucesso', 'Entrega registrada com sucesso!', [
           { text: 'OK', onPress: () => router.back() },
         ]);
-      } catch (error) {
-        // Se falhar, salvar offline
+      } catch {
         await storageService.savePendingDelivery(deliveryData);
         Alert.alert(
           'Salvo offline',
@@ -127,16 +135,33 @@ export default function DeliveryScreen() {
           [{ text: 'OK', onPress: () => router.back() }],
         );
       }
-    } catch (error: any) {
-      Alert.alert('Erro', error.message || 'Não foi possível registrar a entrega');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Não foi possível registrar a entrega';
+      Alert.alert('Erro', message);
     } finally {
       setLoading(false);
     }
   };
 
+  if (initialLoading || !dumpster) {
+    return (
+      <SafeAreaView style={[styles.container, styles.centered]} edges={['top', 'bottom']}>
+        <ActivityIndicator size="large" color="#0ea5e9" />
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-    <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
       <View style={styles.content}>
         <Text style={styles.title}>Registrar Entrega/Retirada</Text>
         <Text style={styles.subtitle}>Caçamba: {dumpster?.code}</Text>
@@ -260,7 +285,8 @@ export default function DeliveryScreen() {
           )}
         </TouchableOpacity>
       </View>
-    </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -269,6 +295,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  centered: {
+    justifyContent: 'center',
+  },
+  keyboardView: {
+    flex: 1,
   },
   scrollView: {
     flex: 1,

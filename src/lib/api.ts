@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { router } from 'expo-router';
 import { authStorage } from '@/lib/authStorage';
-import { LoginDto, AuthResponseDto, CreateDeliveryDto, CompleteWorkOrderDto } from '@/shared';
+import { AuthResponseDto, CreateDeliveryDto, LoginDto } from '@/shared';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
 
@@ -13,7 +13,6 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Interceptor para adicionar token
 api.interceptors.request.use(async (config) => {
   const token = await authStorage.getToken();
   if (token) {
@@ -22,7 +21,6 @@ api.interceptors.request.use(async (config) => {
   return config;
 });
 
-// Interceptor para 401: limpa auth e redireciona para login
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
@@ -38,7 +36,6 @@ api.interceptors.response.use(
 );
 
 export const authApi = {
-  /** Login do motorista (CPF + senha) */
   login: async (data: LoginDto): Promise<AuthResponseDto> => {
     const response = await api.post('/auth/driver/login', {
       cpf: data.cpf.replace(/\D/g, ''),

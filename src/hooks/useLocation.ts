@@ -50,8 +50,8 @@ export function useLocation() {
       setLocation(locationData);
       setLoading(false);
       return locationData;
-    } catch (err: any) {
-      setError(err.message || 'Erro ao obter localização');
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Erro ao obter localização');
       setLoading(false);
       return null;
     }

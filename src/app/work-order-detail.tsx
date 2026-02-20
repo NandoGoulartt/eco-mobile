@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  KeyboardAvoidingView,
   Linking,
   Platform,
   ScrollView,
@@ -39,7 +40,7 @@ export default function WorkOrderDetailScreen() {
   }, [orderId]);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (workOrder?.status === 'IN_PROGRESS' && workOrder.startedAt) {
       interval = setInterval(() => {
         const now = new Date().getTime();
@@ -72,8 +73,12 @@ export default function WorkOrderDetailScreen() {
       const response = await workOrdersApi.start(workOrder.id);
       setWorkOrder(response.data);
       Alert.alert('Sucesso', 'Tarefa iniciada!');
-    } catch (error: any) {
-      Alert.alert('Erro', error.response?.data?.message || 'Não foi possível iniciar a tarefa');
+    } catch (error: unknown) {
+      const message =
+        error && typeof error === 'object' && 'response' in error
+          ? (error as { response?: { data?: { message?: string } } }).response?.data?.message
+          : undefined;
+      Alert.alert('Erro', message || 'Não foi possível iniciar a tarefa');
     } finally {
       setStarting(false);
     }
@@ -140,7 +145,7 @@ export default function WorkOrderDetailScreen() {
           uri: photoUri,
           type: 'image/jpeg',
           name: 'photo.jpg',
-        } as any);
+        } as unknown as Blob);
       }
       formData.append('lat', location.lat.toString());
       formData.append('lng', location.lng.toString());
@@ -155,8 +160,7 @@ export default function WorkOrderDetailScreen() {
       Alert.alert('Sucesso', 'Tarefa concluída!', [
         { text: 'OK', onPress: () => router.back() },
       ]);
-    } catch (error: any) {
-      // Se falhar, salvar offline
+    } catch {
       try {
         const pendingData = {
           workOrderId: workOrder.id,
@@ -269,7 +273,15 @@ export default function WorkOrderDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-    <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
+      <KeyboardAvoidingView
+        style={styles.keyboardView}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+        >
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.sequence}>#{workOrder.sequence}</Text>
@@ -419,7 +431,8 @@ export default function WorkOrderDetailScreen() {
           </View>
         )}
       </View>
-    </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -428,6 +441,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  keyboardView: {
+    flex: 1,
   },
   loadingContainer: {
     justifyContent: 'center',

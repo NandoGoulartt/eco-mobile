@@ -9,7 +9,6 @@ const SAVED_CPF_KEY = 'auth_saved_cpf';
 
 let inMemoryToken: string | null = null;
 
-/** Decodifica base64 (compatível com React Native, onde atob pode não existir) */
 function base64Decode(str: string): string {
   if (typeof atob === 'function') return atob(str);
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
@@ -33,7 +32,6 @@ function base64Decode(str: string): string {
   }
 }
 
-/** Verifica se o JWT está expirado (payload.exp em segundos). Retorna false se não conseguir decodificar. */
 function isTokenExpired(token: string): boolean {
   try {
     const parts = token.split('.');
@@ -48,11 +46,6 @@ function isTokenExpired(token: string): boolean {
   }
 }
 
-/**
- * Armazena credenciais de forma segura.
- * - rememberMe=true: token no SecureStore (Keychain/Keystore), user e CPF no AsyncStorage
- * - rememberMe=false: token apenas em memória (perdido ao fechar o app)
- */
 export const authStorage = {
   async setCredentials(token: string, user: User, rememberMe: boolean) {
     if (rememberMe) {
@@ -124,7 +117,6 @@ export const authStorage = {
     await this.clearPersisted();
   },
 
-  /** Limpa apenas token/usuário (mantém CPF salvo). Usado quando token expira. */
   async clearSession(): Promise<void> {
     inMemoryToken = null;
     try {
