@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Alert,
   Image,
+  Linking,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -186,6 +188,62 @@ export default function WorkOrderDetailScreen() {
     return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
+  const getDestination = (): { address: string; lat?: number; lng?: number } | null => {
+    if (!workOrder) return null;
+    if (workOrder.jobSite?.address) {
+      return {
+        address: workOrder.jobSite.address,
+        lat: workOrder.jobSite.latitude,
+        lng: workOrder.jobSite.longitude,
+      };
+    }
+    if (workOrder.yard?.address) {
+      return {
+        address: workOrder.yard.address,
+        lat: workOrder.yard.latitude,
+        lng: workOrder.yard.longitude,
+      };
+    }
+    return null;
+  };
+
+  const handleOpenMaps = async () => {
+    const destination = getDestination();
+    if (!destination) {
+      Alert.alert('Erro', 'Nenhum endereço de destino disponível para esta tarefa.');
+      return;
+    }
+
+    const query = destination.lat != null && destination.lng != null
+      ? `${destination.lat},${destination.lng}`
+      : encodeURIComponent(destination.address);
+
+    const urls = {
+      apple: `https://maps.apple.com/?daddr=${query}`,
+      google: `https://www.google.com/maps/dir/?api=1&destination=${query}`,
+    };
+
+    const urlToOpen = Platform.OS === 'ios' ? urls.apple : urls.google;
+
+    try {
+      const canOpen = await Linking.canOpenURL(urlToOpen);
+      if (canOpen) {
+        await Linking.openURL(urlToOpen);
+      } else {
+        await Linking.openURL(urls.google);
+      }
+    } catch {
+      try {
+        await Linking.openURL(urls.google);
+      } catch (err) {
+        Alert.alert(
+          'Erro',
+          'Não foi possível abrir o aplicativo de mapas. Tente copiar o endereço manualmente.',
+        );
+      }
+    }
+  };
+
   const getTypeLabel = (type: WorkOrderType) => {
     switch (type) {
       case 'DROP_OFF':
@@ -246,6 +304,15 @@ export default function WorkOrderDetailScreen() {
             <Text style={styles.value}>{workOrder.yard.name}</Text>
             <Text style={styles.subValue}>{workOrder.yard.address}</Text>
           </View>
+        )}
+
+        {getDestination() && (
+          <TouchableOpacity
+            style={styles.mapsButton}
+            onPress={handleOpenMaps}
+          >
+            <Text style={styles.mapsButtonText}>🗺️ Abrir no Maps</Text>
+          </TouchableOpacity>
         )}
 
         {workOrder.status === 'IN_PROGRESS' && workOrder.startedAt && (
@@ -395,6 +462,18 @@ const styles = StyleSheet.create({
     padding: 15,
     borderRadius: 8,
     marginBottom: 10,
+  },
+  mapsButton: {
+    backgroundColor: '#4285F4',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  mapsButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   label: {
     fontSize: 12,
