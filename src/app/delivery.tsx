@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
 import { useLocation } from '@/hooks/useLocation';
 import { deliveriesApi, jobSitesApi, dumpstersApi } from '@/lib/api';
@@ -134,7 +135,8 @@ export default function DeliveryScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
       <View style={styles.content}>
         <Text style={styles.title}>Registrar Entrega/Retirada</Text>
         <Text style={styles.subtitle}>Caçamba: {dumpster?.code}</Text>
@@ -259,6 +261,7 @@ export default function DeliveryScreen() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -266,6 +269,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   content: {
     padding: 20,

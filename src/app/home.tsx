@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import { useSync } from '@/hooks/useSync';
 import { workOrdersApi } from '@/lib/api';
@@ -8,6 +9,7 @@ import { WorkOrder, WorkOrderStatus, WorkOrderType } from '@/shared';
 
 export default function HomeScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { user, logout } = useAuth();
   useSync(); // Sincronizar pendentes ao abrir
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
@@ -87,7 +89,7 @@ export default function HomeScreen() {
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <ActivityIndicator size="large" color="#0ea5e9" />
       </View>
     );
@@ -98,8 +100,8 @@ export default function HomeScreen() {
   );
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={[styles.container, { paddingBottom: insets.bottom }]}>
+      <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
         <Text style={styles.headerTitle}>Minhas Tarefas</Text>
         <TouchableOpacity onPress={handleLogout}>
           <Text style={styles.logoutText}>Sair</Text>
@@ -170,7 +172,6 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#0ea5e9',
     padding: 20,
-    paddingTop: 50,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',

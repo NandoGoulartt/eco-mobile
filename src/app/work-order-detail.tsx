@@ -16,6 +16,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function WorkOrderDetailScreen() {
   const router = useRouter();
@@ -202,14 +203,15 @@ export default function WorkOrderDetailScreen() {
 
   if (loading || !workOrder) {
     return (
-      <View style={styles.container}>
+      <SafeAreaView style={[styles.container, styles.loadingContainer]} edges={['top', 'bottom']}>
         <ActivityIndicator size="large" color="#0ea5e9" />
-      </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+    <ScrollView style={styles.scrollView} contentContainerStyle={styles.scrollContent}>
       <View style={styles.content}>
         <View style={styles.header}>
           <Text style={styles.sequence}>#{workOrder.sequence}</Text>
@@ -351,6 +353,7 @@ export default function WorkOrderDetailScreen() {
         )}
       </View>
     </ScrollView>
+    </SafeAreaView>
   );
 }
 
@@ -358,6 +361,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
   },
   content: {
     padding: 20,
