@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView, ActivityIndicator, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,12 +16,10 @@ export default function HomeScreen() {
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const isInitialMount = useRef(true);
 
-  useEffect(() => {
-    loadWorkOrders();
-  }, []);
-
-  const loadWorkOrders = async () => {
+  const loadWorkOrders = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const response = await workOrdersApi.getMyOrders();
       setWorkOrders(response.data);
@@ -30,11 +29,19 @@ export default function HomeScreen() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      const showLoading = isInitialMount.current;
+      if (isInitialMount.current) isInitialMount.current = false;
+      loadWorkOrders(showLoading);
+    }, [loadWorkOrders]),
+  );
 
   const onRefresh = () => {
     setRefreshing(true);
-    loadWorkOrders();
+    loadWorkOrders(true);
   };
 
   const handleLogout = () => {
