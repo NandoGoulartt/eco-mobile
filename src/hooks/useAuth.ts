@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authStorage } from '@/lib/authStorage';
 import { User } from '@/shared';
 
 export function useAuth() {
@@ -13,11 +13,12 @@ export function useAuth() {
 
   const loadAuth = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
-      const userStr = await AsyncStorage.getItem('user');
-      
-      if (token && userStr) {
-        const userData = JSON.parse(userStr);
+      const [token, userData] = await Promise.all([
+        authStorage.getToken(),
+        authStorage.getUser(),
+      ]);
+
+      if (token && userData) {
         setUser(userData);
         setIsAuthenticated(true);
       }
@@ -28,10 +29,9 @@ export function useAuth() {
     }
   };
 
-  const login = async (token: string, userData: User) => {
+  const login = async (token: string, userData: User, rememberMe: boolean = true) => {
     try {
-      await AsyncStorage.setItem('token', token);
-      await AsyncStorage.setItem('user', JSON.stringify(userData));
+      await authStorage.setCredentials(token, userData, rememberMe);
       setUser(userData);
       setIsAuthenticated(true);
     } catch (error) {
@@ -41,8 +41,7 @@ export function useAuth() {
 
   const logout = async () => {
     try {
-      await AsyncStorage.removeItem('token');
-      await AsyncStorage.removeItem('user');
+      await authStorage.clear();
       setUser(null);
       setIsAuthenticated(false);
     } catch (error) {

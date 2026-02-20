@@ -1,5 +1,6 @@
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { router } from 'expo-router';
+import { authStorage } from '@/lib/authStorage';
 import { LoginDto, AuthResponseDto, CreateDeliveryDto, CompleteWorkOrderDto } from '@/shared';
 
 const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
@@ -14,12 +15,27 @@ const api = axios.create({
 
 // Interceptor para adicionar token
 api.interceptors.request.use(async (config) => {
-  const token = await AsyncStorage.getItem('token');
+  const token = await authStorage.getToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+// Interceptor para 401: limpa auth e redireciona para login
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      const isLoginRequest = error.config?.url?.includes('/auth/') ?? false;
+      if (!isLoginRequest) {
+        await authStorage.clearSession();
+        router.replace('/login');
+      }
+    }
+    return Promise.reject(error);
+  },
+);
 
 export const authApi = {
   /** Login do motorista (CPF + senha) */
