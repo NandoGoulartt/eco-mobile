@@ -130,8 +130,11 @@ export default function WorkOrderDetailScreen() {
     }
   };
 
+  const requiresLocation = workOrder?.type !== 'PICK_UP';
+
   const handleComplete = async () => {
-    if (!workOrder || !location) {
+    if (!workOrder) return;
+    if (requiresLocation && !location) {
       Alert.alert('Atenção', 'É necessário capturar a localização GPS');
       return;
     }
@@ -147,10 +150,12 @@ export default function WorkOrderDetailScreen() {
           name: 'photo.jpg',
         } as unknown as Blob);
       }
-      formData.append('lat', location.lat.toString());
-      formData.append('lng', location.lng.toString());
-      if (location.accuracy) {
-        formData.append('accuracy', location.accuracy.toString());
+      if (location) {
+        formData.append('lat', location.lat.toString());
+        formData.append('lng', location.lng.toString());
+        if (location.accuracy) {
+          formData.append('accuracy', location.accuracy.toString());
+        }
       }
       if (notes) {
         formData.append('notes', notes);
@@ -165,9 +170,9 @@ export default function WorkOrderDetailScreen() {
         const pendingData = {
           workOrderId: workOrder.id,
           photoUri,
-          lat: location.lat,
-          lng: location.lng,
-          accuracy: location.accuracy,
+          lat: location?.lat ?? 0,
+          lng: location?.lng ?? 0,
+          accuracy: location?.accuracy,
           notes,
           timestamp: new Date().toISOString(),
         };
@@ -353,20 +358,22 @@ export default function WorkOrderDetailScreen() {
 
         {workOrder.status === 'IN_PROGRESS' && (
           <>
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Localização GPS</Text>
-              <TouchableOpacity style={styles.actionButton} onPress={handleGetLocation}>
-                <Text style={styles.actionButtonText}>
-                  {location ? 'Localização Capturada ✓' : 'Capturar Localização'}
-                </Text>
-              </TouchableOpacity>
-              {location && (
-                <Text style={styles.locationText}>
-                  {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
-                  {location.accuracy && ` (${location.accuracy.toFixed(0)}m)`}
-                </Text>
-              )}
-            </View>
+            {requiresLocation && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Localização GPS</Text>
+                <TouchableOpacity style={styles.actionButton} onPress={handleGetLocation}>
+                  <Text style={styles.actionButtonText}>
+                    {location ? 'Localização Capturada ✓' : 'Capturar Localização'}
+                  </Text>
+                </TouchableOpacity>
+                {location && (
+                  <Text style={styles.locationText}>
+                    {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
+                    {location.accuracy && ` (${location.accuracy.toFixed(0)}m)`}
+                  </Text>
+                )}
+              </View>
+            )}
 
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Foto (Opcional)</Text>
@@ -395,10 +402,10 @@ export default function WorkOrderDetailScreen() {
             <TouchableOpacity
               style={[
                 styles.completeButton,
-                !location && styles.completeButtonDisabled,
+                requiresLocation && !location && styles.completeButtonDisabled,
               ]}
               onPress={handleComplete}
-              disabled={completing || !location}
+              disabled={completing || (requiresLocation && !location)}
             >
               {completing ? (
                 <ActivityIndicator color="#fff" />
