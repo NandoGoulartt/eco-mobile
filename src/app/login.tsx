@@ -1,21 +1,31 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'expo-router';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuth } from '@/hooks/useAuth';
 import { authApi } from '@/lib/api';
 import { authStorage } from '@/lib/authStorage';
 import { LoginDto } from '@/shared';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+const formatCpf = (value: string): string => {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 6) return `${digits.slice(0, 3)}.${digits.slice(3)}`;
+  if (digits.length <= 9) return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6)}`;
+  return `${digits.slice(0, 3)}.${digits.slice(3, 6)}.${digits.slice(6, 9)}-${digits.slice(9)}`;
+};
 
 export default function LoginScreen() {
   const router = useRouter();
@@ -26,19 +36,15 @@ export default function LoginScreen() {
   });
   const [loading, setLoading] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     authStorage.getSavedCpf().then((cpf) => {
-      if (cpf) setFormData((prev) => ({ ...prev, cpf }));
+      if (cpf) setFormData((prev) => ({ ...prev, cpf: formatCpf(cpf) }));
     });
   }, []);
 
   const handleLogin = async () => {
-    if (!formData.cpf || !formData.password) {
-      Alert.alert('Erro', 'Por favor, preencha CPF e senha');
-      return;
-    }
-
     setLoading(true);
     try {
       const response = await authApi.login(formData);
@@ -70,49 +76,58 @@ export default function LoginScreen() {
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.content}>
-        <Text style={styles.title}>Gestão de Caçambas</Text>
-        <Text style={styles.subtitle}>App do Motorista</Text>
+            <Text style={styles.title}>Gestão de Caçambas</Text>
+            <Text style={styles.subtitle}>App do Motorista</Text>
 
-        <View style={styles.form}>
-          <TextInput
-            style={styles.input}
-            placeholder="CPF"
-            placeholderTextColor="#999"
-            value={formData.cpf}
-            onChangeText={(text) => setFormData({ ...formData, cpf: text })}
-            keyboardType="numeric"
-            maxLength={14}
-          />
+            <View style={styles.form}>
+              <TextInput
+                style={styles.input}
+                placeholder="CPF"
+                placeholderTextColor="#999"
+                value={formData.cpf}
+                onChangeText={(text) => setFormData({ ...formData, cpf: formatCpf(text) })}
+                keyboardType="numeric"
+                maxLength={14}
+              />
 
-          <TextInput
-            style={styles.input}
-            placeholder="Senha"
-            placeholderTextColor="#999"
-            value={formData.password}
-            onChangeText={(text) => setFormData({ ...formData, password: text })}
-            secureTextEntry
-            autoCapitalize="none"
-          />
+              <View style={styles.passwordInputContainer}>
+                <TextInput
+                  style={styles.passwordInput}
+                  placeholder="Senha"
+                  placeholderTextColor="#999"
+                  value={formData.password}
+                  onChangeText={(text) => setFormData({ ...formData, password: text })}
+                  secureTextEntry={!showPassword}
+                  autoCapitalize="none"
+                />
+                <TouchableOpacity
+                  onPress={() => setShowPassword((prev) => !prev)}
+                  style={styles.passwordToggle}
+                  activeOpacity={0.7}
+                >
+                  <Ionicons name={showPassword ? 'eye-off' : 'eye'} size={22} color="#666" />
+                </TouchableOpacity>
+              </View>
 
-          <TouchableOpacity
-            style={styles.rememberRow}
-            onPress={() => setRememberMe(!rememberMe)}
-            activeOpacity={0.7}
-          >
-            <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-              {rememberMe && <Text style={styles.checkmark}>✓</Text>}
+              <TouchableOpacity
+                style={styles.rememberRow}
+                onPress={() => setRememberMe(!rememberMe)}
+                activeOpacity={0.7}
+              >
+                <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
+                  {rememberMe && <Text style={styles.checkmark}>✓</Text>}
+                </View>
+                <Text style={styles.rememberText}>Lembrar senha</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, loading && styles.buttonDisabled]}
+                onPress={handleLogin}
+                disabled={loading}
+              >
+                <Text style={styles.buttonText}>{loading ? 'Entrando...' : 'Entrar'}</Text>
+              </TouchableOpacity>
             </View>
-            <Text style={styles.rememberText}>Lembrar senha</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.button, loading && styles.buttonDisabled]}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            <Text style={styles.buttonText}>{loading ? 'Entrando...' : 'Entrar'}</Text>
-          </TouchableOpacity>
-        </View>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
@@ -166,6 +181,25 @@ const styles = StyleSheet.create({
     padding: 12,
     fontSize: 16,
     backgroundColor: '#fff',
+    color: '#111',
+  },
+  passwordInputContainer: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingRight: 10,
+  },
+  passwordInput: {
+    flex: 1,
+    padding: 12,
+    fontSize: 16,
+    color: '#111',
+  },
+  passwordToggle: {
+    padding: 4,
   },
   rememberRow: {
     flexDirection: 'row',
