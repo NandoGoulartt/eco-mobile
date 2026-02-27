@@ -287,157 +287,157 @@ export default function WorkOrderDetailScreen() {
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.sequence}>#{workOrder.sequence}</Text>
-          <Text style={styles.type}>{getTypeLabel(workOrder.type)}</Text>
-        </View>
-
-        <View style={styles.infoSection}>
-          <Text style={styles.label}>Caçamba</Text>
-          <Text style={styles.value}>{workOrder.dumpster?.code}</Text>
-        </View>
-
-        <View style={styles.infoSection}>
-          <Text style={styles.label}>Veículo</Text>
-          <Text style={styles.value}>
-            {workOrder.vehicle?.placa} - {workOrder.vehicle?.marca || workOrder.vehicle?.placa}
-          </Text>
-        </View>
-
-        {workOrder.jobSite && (
-          <View style={styles.infoSection}>
-            <Text style={styles.label}>Obra</Text>
-            <Text style={styles.value}>{workOrder.jobSite.address}</Text>
-            {workOrder.jobSite.customer && (
-              <Text style={styles.subValue}>Cliente: {workOrder.jobSite.customer.name}</Text>
-            )}
-          </View>
-        )}
-
-        {workOrder.yard && (
-          <View style={styles.infoSection}>
-            <Text style={styles.label}>Terreno</Text>
-            <Text style={styles.value}>{workOrder.yard.name}</Text>
-            <Text style={styles.subValue}>{workOrder.yard.address}</Text>
-          </View>
-        )}
-
-        {getDestination() && (
-          <TouchableOpacity
-            style={styles.mapsButton}
-            onPress={handleOpenMaps}
-          >
-            <Text style={styles.mapsButtonText}>🗺️ Abrir no Maps</Text>
-          </TouchableOpacity>
-        )}
-
-        {workOrder.status === 'IN_PROGRESS' && workOrder.startedAt && (
-          <View style={styles.timerSection}>
-            <Text style={styles.timerLabel}>Tempo decorrido</Text>
-            <Text style={styles.timer}>{formatTime(timer)}</Text>
-            <Text style={styles.timerSubtext}>
-              Iniciado: {new Date(workOrder.startedAt).toLocaleString('pt-BR')}
-            </Text>
-          </View>
-        )}
-
-        {workOrder.status === 'PENDING' && (
-          <TouchableOpacity
-            style={styles.startButton}
-            onPress={handleStart}
-            disabled={starting}
-          >
-            {starting ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.startButtonText}>Dar Partida</Text>
-            )}
-          </TouchableOpacity>
-        )}
-
-        {workOrder.status === 'IN_PROGRESS' && (
-          <>
-            {requiresLocation && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Localização GPS</Text>
-                <TouchableOpacity style={styles.actionButton} onPress={handleGetLocation}>
-                  <Text style={styles.actionButtonText}>
-                    {location ? 'Localização Capturada ✓' : 'Capturar Localização'}
-                  </Text>
-                </TouchableOpacity>
-                {location && (
-                  <Text style={styles.locationText}>
-                    {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
-                    {location.accuracy && ` (${location.accuracy.toFixed(0)}m)`}
-                  </Text>
-                )}
-              </View>
-            )}
-
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Foto (Opcional)</Text>
-              <TouchableOpacity style={styles.actionButton} onPress={handleTakePhoto}>
-                <Text style={styles.actionButtonText}>
-                  {photoUri ? 'Foto Capturada ✓' : 'Tirar Foto'}
-                </Text>
-              </TouchableOpacity>
-              {photoUri && (
-                <Image source={{ uri: photoUri }} style={styles.photoPreview} />
-              )}
+          <View style={styles.content}>
+            <View style={styles.header}>
+              <Text style={styles.sequence}>#{workOrder.sequence}</Text>
+              <Text style={styles.type}>{getTypeLabel(workOrder.type)}</Text>
             </View>
 
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Observações (Opcional)</Text>
-              <TextInput
-                style={styles.textArea}
-                value={notes}
-                onChangeText={setNotes}
-                placeholder="Digite observações..."
-                multiline
-                numberOfLines={4}
-              />
+            <View style={styles.infoSection}>
+              <Text style={styles.label}>Caçamba</Text>
+              <Text style={styles.value}>{workOrder.dumpster?.code}</Text>
             </View>
 
-            <TouchableOpacity
-              style={[
-                styles.completeButton,
-                requiresLocation && !location && styles.completeButtonDisabled,
-              ]}
-              onPress={handleComplete}
-              disabled={completing || (requiresLocation && !location)}
-            >
-              {completing ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.completeButtonText}>Concluir Tarefa</Text>
-              )}
-            </TouchableOpacity>
-          </>
-        )}
-
-        {workOrder.status === 'DONE' && (
-          <View style={styles.completedSection}>
-            <Text style={styles.completedText}>✓ Tarefa Concluída</Text>
-            {workOrder.completedAt && (
-              <Text style={styles.completedDate}>
-                {new Date(workOrder.completedAt).toLocaleString('pt-BR')}
+            <View style={styles.infoSection}>
+              <Text style={styles.label}>Veículo</Text>
+              <Text style={styles.value}>
+                {workOrder.vehicle?.placa} - {workOrder.vehicle?.marca || workOrder.vehicle?.placa}
               </Text>
+            </View>
+
+            {workOrder.jobSite && (
+              <View style={styles.infoSection}>
+                <Text style={styles.label}>Obra</Text>
+                <Text style={styles.value}>{workOrder.jobSite.address}</Text>
+                {workOrder.jobSite.customer && (
+                  <Text style={styles.subValue}>Cliente: {workOrder.jobSite.customer.name}</Text>
+                )}
+              </View>
             )}
-            {workOrder.proofs && workOrder.proofs.length > 0 && (
-              <View style={styles.proofSection}>
-                <Text style={styles.proofTitle}>Última Comprovação</Text>
-                <Text style={styles.proofText}>
-                  {workOrder.proofs[0].lat.toFixed(6)}, {workOrder.proofs[0].lng.toFixed(6)}
+
+            {workOrder.yard && (
+              <View style={styles.infoSection}>
+                <Text style={styles.label}>Terreno</Text>
+                <Text style={styles.value}>{workOrder.yard.name}</Text>
+                <Text style={styles.subValue}>{workOrder.yard.address}</Text>
+              </View>
+            )}
+
+            {getDestination() && (
+              <TouchableOpacity
+                style={styles.mapsButton}
+                onPress={handleOpenMaps}
+              >
+                <Text style={styles.mapsButtonText}>🗺️ Abrir no Maps</Text>
+              </TouchableOpacity>
+            )}
+
+            {workOrder.status === 'IN_PROGRESS' && workOrder.startedAt && (
+              <View style={styles.timerSection}>
+                <Text style={styles.timerLabel}>Tempo decorrido</Text>
+                <Text style={styles.timer}>{formatTime(timer)}</Text>
+                <Text style={styles.timerSubtext}>
+                  Iniciado: {new Date(workOrder.startedAt).toLocaleString('pt-BR')}
                 </Text>
-                {workOrder.proofs[0].notes && (
-                  <Text style={styles.proofNotes}>{workOrder.proofs[0].notes}</Text>
+              </View>
+            )}
+
+            {workOrder.status === 'PENDING' && (
+              <TouchableOpacity
+                style={styles.startButton}
+                onPress={handleStart}
+                disabled={starting}
+              >
+                {starting ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.startButtonText}>Dar Partida</Text>
+                )}
+              </TouchableOpacity>
+            )}
+
+            {workOrder.status === 'IN_PROGRESS' && (
+              <>
+                {requiresLocation && (
+                  <View style={styles.section}>
+                    <Text style={styles.sectionTitle}>Localização GPS</Text>
+                    <TouchableOpacity style={styles.actionButton} onPress={handleGetLocation}>
+                      <Text style={styles.actionButtonText}>
+                        {location ? 'Localização Capturada ✓' : 'Capturar Localização'}
+                      </Text>
+                    </TouchableOpacity>
+                    {location && (
+                      <Text style={styles.locationText}>
+                        {location.lat.toFixed(6)}, {location.lng.toFixed(6)}
+                        {location.accuracy && ` (${location.accuracy.toFixed(0)}m)`}
+                      </Text>
+                    )}
+                  </View>
+                )}
+
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Foto (Opcional)</Text>
+                  <TouchableOpacity style={styles.actionButton} onPress={handleTakePhoto}>
+                    <Text style={styles.actionButtonText}>
+                      {photoUri ? 'Foto Capturada ✓' : 'Tirar Foto'}
+                    </Text>
+                  </TouchableOpacity>
+                  {photoUri && (
+                    <Image source={{ uri: photoUri }} style={styles.photoPreview} />
+                  )}
+                </View>
+
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Observações (Opcional)</Text>
+                  <TextInput
+                    style={styles.textArea}
+                    value={notes}
+                    onChangeText={setNotes}
+                    placeholder="Digite observações..."
+                    multiline
+                    numberOfLines={4}
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={[
+                    styles.completeButton,
+                    requiresLocation && !location && styles.completeButtonDisabled,
+                  ]}
+                  onPress={handleComplete}
+                  disabled={completing || (requiresLocation && !location)}
+                >
+                  {completing ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text style={styles.completeButtonText}>Concluir Tarefa</Text>
+                  )}
+                </TouchableOpacity>
+              </>
+            )}
+
+            {workOrder.status === 'DONE' && (
+              <View style={styles.completedSection}>
+                <Text style={styles.completedText}>✓ Tarefa Concluída</Text>
+                {workOrder.completedAt && (
+                  <Text style={styles.completedDate}>
+                    {new Date(workOrder.completedAt).toLocaleString('pt-BR')}
+                  </Text>
+                )}
+                {workOrder.proofs && workOrder.proofs.length > 0 && (
+                  <View style={styles.proofSection}>
+                    <Text style={styles.proofTitle}>Última Comprovação</Text>
+                    <Text style={styles.proofText}>
+                      {workOrder.proofs[0].lat.toFixed(6)}, {workOrder.proofs[0].lng.toFixed(6)}
+                    </Text>
+                    {workOrder.proofs[0].notes && (
+                      <Text style={styles.proofNotes}>{workOrder.proofs[0].notes}</Text>
+                    )}
+                  </View>
                 )}
               </View>
             )}
           </View>
-        )}
-      </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -472,12 +472,12 @@ const styles = StyleSheet.create({
   },
   sequence: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'Inter_700Bold',
     color: '#666',
   },
   type: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Inter_700Bold',
     color: '#0ea5e9',
   },
   infoSection: {
@@ -496,7 +496,7 @@ const styles = StyleSheet.create({
   mapsButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
   },
   label: {
     fontSize: 12,
@@ -505,7 +505,7 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
     color: '#333',
   },
   subValue: {
@@ -527,9 +527,8 @@ const styles = StyleSheet.create({
   },
   timer: {
     fontSize: 48,
-    fontWeight: 'bold',
+    fontFamily: 'Inter_700Bold',
     color: '#0ea5e9',
-    fontFamily: 'monospace',
   },
   timerSubtext: {
     fontSize: 12,
@@ -546,7 +545,7 @@ const styles = StyleSheet.create({
   startButtonText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Inter_700Bold',
   },
   section: {
     backgroundColor: '#fff',
@@ -556,7 +555,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter_700Bold',
     marginBottom: 10,
     color: '#333',
   },
@@ -570,7 +569,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: 'Inter_600SemiBold',
   },
   locationText: {
     fontSize: 12,
@@ -605,7 +604,7 @@ const styles = StyleSheet.create({
   completeButtonText: {
     color: '#fff',
     fontSize: 18,
-    fontWeight: 'bold',
+    fontFamily: 'Inter_700Bold',
   },
   completedSection: {
     backgroundColor: '#d1fae5',
@@ -615,7 +614,7 @@ const styles = StyleSheet.create({
   },
   completedText: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontFamily: 'Inter_700Bold',
     color: '#10b981',
     marginBottom: 8,
   },
@@ -632,7 +631,7 @@ const styles = StyleSheet.create({
   },
   proofTitle: {
     fontSize: 14,
-    fontWeight: '600',
+    fontFamily: 'Inter_700Bold',
     color: '#333',
     marginBottom: 8,
   },

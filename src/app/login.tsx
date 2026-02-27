@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontFamily: 'Inter_700Bold',
     textAlign: 'center',
     marginBottom: 8,
     color: '#0ea5e9',
@@ -221,18 +221,21 @@ const styles = StyleSheet.create({
   checkmark: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: 'bold',
+    fontFamily: 'Inter_700Bold',
   },
   rememberText: {
     marginLeft: 10,
     fontSize: 15,
     color: '#666',
+    flexShrink: 1,
   },
   button: {
     backgroundColor: '#0ea5e9',
     borderRadius: 8,
     padding: 14,
+    minHeight: 52,
     alignItems: 'center',
+    justifyContent: 'center',
     marginTop: 15,
   },
   buttonDisabled: {
@@ -242,5 +245,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+    width: '100%',
+    textAlign: 'center',
   },
 });
