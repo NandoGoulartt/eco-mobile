@@ -201,7 +201,7 @@ export default function WorkOrderDetailScreen() {
     if (!workOrder) return null;
     if (workOrder.jobSite?.address) {
       return {
-        address: workOrder.jobSite.address,
+        address: `${workOrder.jobSite.name || 'Endereço'} - ${workOrder.jobSite.address}`,
         lat: workOrder.jobSite.latitude,
         lng: workOrder.jobSite.longitude,
       };
@@ -308,7 +308,7 @@ export default function WorkOrderDetailScreen() {
             {workOrder.jobSite && (
               <View style={styles.infoSection}>
                 <Text style={styles.label}>Obra</Text>
-                <Text style={styles.value}>{workOrder.jobSite.address}</Text>
+                <Text style={styles.value}>{workOrder.jobSite.name || 'Endereço'} - {workOrder.jobSite.address}</Text>
                 {workOrder.jobSite.customer && (
                   <Text style={styles.subValue}>Cliente: {workOrder.jobSite.customer.name}</Text>
                 )}

@@ -72,6 +72,7 @@ export interface Contact {
 export interface JobSite {
   id: string;
   customerId: string;
+  name?: string;
   address: string;
   neighborhood?: string;
   reference?: string;

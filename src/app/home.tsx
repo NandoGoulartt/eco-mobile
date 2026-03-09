@@ -150,7 +150,7 @@ export default function HomeScreen() {
                 {order.dumpster?.code} - {order.vehicle?.placa}
               </Text>
               {order.jobSite && (
-                <Text style={styles.orderAddress}>{order.jobSite.address}</Text>
+                <Text style={styles.orderAddress}>{order.jobSite.name || 'Endereço'} - {order.jobSite.address}</Text>
               )}
               {order.yard && <Text style={styles.orderAddress}>{order.yard.name}</Text>}
               {order.scheduledAt && (
