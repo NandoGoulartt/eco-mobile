@@ -59,12 +59,31 @@ export const workOrdersApi = {
   getMyOrders: () => api.get('/work-orders/driver'),
   getById: (id: string) => api.get(`/work-orders/driver/${id}`),
   start: (id: string) => api.post(`/work-orders/driver/${id}/start`),
-  complete: (id: string, formData: FormData) =>
-    api.post(`/work-orders/driver/${id}/complete`, formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    }),
+  complete: async (id: string, formData: FormData) => {
+    const token = await authStorage.getToken();
+    const baseURL = API_URL.replace(/\/$/, '');
+    const url = `${baseURL}/work-orders/driver/${id}/complete`;
+    const headers: Record<string, string> = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    if (!response.ok) {
+      if (response.status === 401) {
+        await authStorage.clearSession();
+        router.replace('/login');
+      }
+      const err = new Error(`Request failed with status ${response.status}`);
+      (err as Error & { response?: { status: number; data?: unknown } }).response = {
+        status: response.status,
+        data: await response.json().catch(() => ({})),
+      };
+      throw err;
+    }
+    return { data: await response.json() };
+  },
 };
 
 export const jobSitesApi = {

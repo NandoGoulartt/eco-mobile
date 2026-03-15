@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import NetInfo from '@react-native-community/netinfo';
 import { workOrdersApi } from '@/lib/api';
 import { storageService } from '@/lib/storage';
+import NetInfo from '@react-native-community/netinfo';
+import { useEffect } from 'react';
 
 export function useSync() {
   useEffect(() => {
@@ -39,8 +39,15 @@ export function useSync() {
 
             await workOrdersApi.complete(completion.workOrderId, formData);
             await storageService.removePendingCompletion(i);
-          } catch (error) {
-            console.error('Erro ao sincronizar conclusão:', error);
+          } catch (error: unknown) {
+            const status = error && typeof error === 'object' && 'response' in error
+              ? (error as { response?: { status?: number } }).response?.status
+              : undefined;
+            if (status === 404 || status === 400) {
+              await storageService.removePendingCompletion(i);
+            } else {
+              console.error('Erro ao sincronizar conclusão:', error);
+            }
           }
         }
       } catch (error) {

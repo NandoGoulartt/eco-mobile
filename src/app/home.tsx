@@ -8,10 +8,17 @@ import { useCallback, useRef, useState } from 'react';
 import { ActivityIndicator, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+function formatCpf(cpf: string | undefined): string {
+  if (!cpf) return '';
+  const digits = cpf.replace(/\D/g, '');
+  if (digits.length !== 11) return cpf;
+  return digits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+}
+
 export default function HomeScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { logout } = useAuth();
+  const { user, logout } = useAuth();
   useSync();
   const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
   const [loading, setLoading] = useState(true);
@@ -109,10 +116,17 @@ export default function HomeScreen() {
   return (
     <View style={[styles.container, { paddingBottom: insets.bottom }]}>
       <View style={[styles.header, { paddingTop: insets.top + 16 }]}>
-        <Text style={styles.headerTitle}>Minhas Tarefas</Text>
-        <TouchableOpacity onPress={handleLogout}>
-          <Text style={styles.logoutText}>Sair</Text>
-        </TouchableOpacity>
+        <View style={styles.headerTop}>
+          <Text style={styles.headerTitle}>Minhas Tarefas</Text>
+          <TouchableOpacity onPress={handleLogout} style={styles.logoutButton}>
+            <Text style={styles.logoutText}>Sair</Text>
+          </TouchableOpacity>
+        </View>
+        {user && (
+          <Text style={styles.driverInfo} numberOfLines={1}>
+            {user.name}{user.cpf ? ` • ${formatCpf(user.cpf)}` : ''}
+          </Text>
+        )}
       </View>
 
       <ScrollView
@@ -131,7 +145,7 @@ export default function HomeScreen() {
               onPress={() => router.push(`/work-order-detail?id=${order.id}`)}
             >
               <View style={styles.orderHeader}>
-                <Text style={styles.orderSequence}>#{order.sequence}</Text>
+                <Text style={styles.orderSequence}>{order.sequence}</Text>
                 <View
                   style={[
                     styles.statusBadge,
@@ -178,7 +192,11 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: '#0ea5e9',
-    padding: 20,
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 12,
+  },
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -188,9 +206,19 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter_700Bold',
     color: '#fff',
   },
+  logoutButton: {
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+  },
   logoutText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 15,
+    fontFamily: 'Inter_600SemiBold',
+  },
+  driverInfo: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.9)',
+    marginTop: 4,
   },
   content: {
     flex: 1,
