@@ -115,7 +115,7 @@ export default function LoginScreen() {
                 activeOpacity={0.7}
               >
                 <View style={[styles.checkbox, rememberMe && styles.checkboxChecked]}>
-                  {rememberMe && <Text style={styles.checkmark}>✓</Text>}
+                  {rememberMe && <Ionicons name="checkmark" size={14} color="#fff" />}
                 </View>
                 <Text style={styles.rememberText}>Lembrar senha</Text>
               </TouchableOpacity>
@@ -217,11 +217,6 @@ const styles = StyleSheet.create({
   },
   checkboxChecked: {
     backgroundColor: '#0ea5e9',
-  },
-  checkmark: {
-    color: '#fff',
-    fontSize: 14,
-    fontFamily: 'Inter_700Bold',
   },
   rememberText: {
     marginLeft: 10,
