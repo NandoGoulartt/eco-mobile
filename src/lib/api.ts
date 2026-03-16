@@ -56,7 +56,8 @@ export const deliveriesApi = {
 };
 
 export const workOrdersApi = {
-  getMyOrders: () => api.get('/work-orders/driver'),
+  getMyOrders: (dateFrom: string, dateTo: string) =>
+    api.get('/work-orders/driver', { params: { dateFrom, dateTo } }),
   getById: (id: string) => api.get(`/work-orders/driver/${id}`),
   start: (id: string) => api.post(`/work-orders/driver/${id}/start`),
   complete: async (id: string, formData: FormData) => {
