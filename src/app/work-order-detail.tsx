@@ -280,7 +280,7 @@ export default function WorkOrderDetailScreen() {
       case 'EXCHANGE':
         return 'Troca';
       case 'DUMP':
-        return 'Descarte';
+        return 'Outro';
       default:
         return type;
     }
