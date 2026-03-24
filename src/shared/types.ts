@@ -160,6 +160,7 @@ export interface WorkOrder {
   scheduledAt?: Date;
   returnDueDate?: Date;
   isIndeterminate: boolean;
+  observations?: string | null;
   driverId: string;
   vehicleId: string;
   dumpsterId: string;

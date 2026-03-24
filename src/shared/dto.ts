@@ -149,6 +149,7 @@ export interface CreateWorkOrderDto {
   scheduledAt?: Date;
   returnDueDate?: Date;
   isIndeterminate?: boolean;
+  observations?: string;
 }
 
 export interface UpdateWorkOrderDto {
@@ -161,6 +162,7 @@ export interface UpdateWorkOrderDto {
   scheduledAt?: Date;
   returnDueDate?: Date;
   isIndeterminate?: boolean;
+  observations?: string | null;
 }
 
 export interface ReorderWorkOrdersDto {
