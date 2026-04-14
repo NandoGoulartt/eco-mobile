@@ -171,7 +171,7 @@ export interface WorkOrder {
   observations?: string | null;
   driverId: string;
   vehicleId: string;
-  dumpsterId: string;
+  dumpsterId: string | null;
   jobSiteId?: string;
   yardId?: string;
   createdAt: Date;

@@ -59,7 +59,8 @@ export const workOrdersApi = {
   getMyOrders: (dateFrom: string, dateTo: string) =>
     api.get('/work-orders/driver', { params: { dateFrom, dateTo } }),
   getById: (id: string) => api.get(`/work-orders/driver/${id}`),
-  start: (id: string) => api.post(`/work-orders/driver/${id}/start`),
+  start: (id: string, body?: { dumpsterId?: string }) =>
+    api.post(`/work-orders/driver/${id}/start`, body ?? {}),
   complete: async (id: string, formData: FormData) => {
     const token = await authStorage.getToken();
     const baseURL = API_URL.replace(/\/$/, '');

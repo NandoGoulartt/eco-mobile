@@ -301,7 +301,7 @@ export default function HomeScreen() {
                 </View>
                 <Text style={styles.orderType}>{getTypeLabel(order.type)}</Text>
                 <Text style={styles.orderInfo}>
-                  {order.dumpster?.code} - {order.vehicle?.placa}
+                  {(order.dumpster?.code ?? '—') + ' - ' + (order.vehicle?.placa ?? '—')}
                 </Text>
                 {order.jobSite && (
                   <Text style={styles.orderAddress}>{order.jobSite.name || 'Endereço'} - {order.jobSite.address}</Text>

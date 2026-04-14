@@ -1,6 +1,6 @@
-import { workOrdersApi } from '@/lib/api';
+import { dumpstersApi, workOrdersApi } from '@/lib/api';
 import { storageService } from '@/lib/storage';
-import { WorkOrder, WorkOrderType } from '@/shared';
+import { Dumpster, DumpsterStatus, WorkOrder, WorkOrderType } from '@/shared';
 import { formatWorkOrderDeliveryDuration } from '@/utils/date';
 import * as ImagePicker from 'expo-image-picker';
 import * as Location from 'expo-location';
@@ -35,10 +35,40 @@ export default function WorkOrderDetailScreen() {
   const [location, setLocation] = useState<{ lat: number; lng: number; accuracy?: number } | null>(null);
   const [notes, setNotes] = useState('');
   const [timer, setTimer] = useState<number>(0);
+  const [availableDumpsters, setAvailableDumpsters] = useState<Dumpster[]>([]);
+  const [selectedDumpsterId, setSelectedDumpsterId] = useState<string | null>(null);
 
   useEffect(() => {
     loadWorkOrder();
   }, [orderId]);
+
+  const needsDriverDumpsterChoice =
+    workOrder?.status === 'PENDING' &&
+    workOrder.type === WorkOrderType.DROP_OFF &&
+    !workOrder.dumpsterId;
+
+  useEffect(() => {
+    if (!needsDriverDumpsterChoice) {
+      setAvailableDumpsters([]);
+      setSelectedDumpsterId(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await dumpstersApi.getAll();
+        const list = (res.data as Dumpster[]).filter(
+          (d) => d.status === DumpsterStatus.AVAILABLE,
+        );
+        if (!cancelled) setAvailableDumpsters(list);
+      } catch {
+        if (!cancelled) setAvailableDumpsters([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [needsDriverDumpsterChoice, workOrder?.id]);
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | undefined;
@@ -69,9 +99,21 @@ export default function WorkOrderDetailScreen() {
   const handleStart = async () => {
     if (!workOrder) return;
 
+    if (needsDriverDumpsterChoice) {
+      if (!selectedDumpsterId) {
+        Alert.alert('Caçamba', 'Selecione o número da caçamba antes de iniciar.');
+        return;
+      }
+    }
+
     setStarting(true);
     try {
-      const response = await workOrdersApi.start(workOrder.id);
+      const response = await workOrdersApi.start(
+        workOrder.id,
+        needsDriverDumpsterChoice && selectedDumpsterId
+          ? { dumpsterId: selectedDumpsterId }
+          : undefined,
+      );
       setWorkOrder(response.data);
       Alert.alert('Sucesso', 'Tarefa iniciada!');
     } catch (error: unknown) {
@@ -319,7 +361,12 @@ export default function WorkOrderDetailScreen() {
 
             <View style={styles.infoSection}>
               <Text style={styles.label}>Caçamba</Text>
-              <Text style={styles.value}>{workOrder.dumpster?.code}</Text>
+              <Text style={styles.value}>
+                {workOrder.dumpster?.code ??
+                  (workOrder.type === WorkOrderType.DROP_OFF
+                    ? 'A definir ao iniciar'
+                    : '—')}
+              </Text>
             </View>
 
             <View style={styles.infoSection}>
@@ -366,11 +413,47 @@ export default function WorkOrderDetailScreen() {
               </View>
             )}
 
+            {workOrder.status === 'PENDING' && needsDriverDumpsterChoice && (
+              <View style={styles.section}>
+                <Text style={styles.sectionTitle}>Caçamba para esta entrega *</Text>
+                <Text style={styles.subValue}>
+                  O pedido foi aberto sem número. Escolha a caçamba disponível antes de dar partida.
+                </Text>
+                {availableDumpsters.length === 0 ? (
+                  <Text style={styles.subValue}>Carregando caçambas disponíveis…</Text>
+                ) : (
+                  availableDumpsters.map((d) => (
+                    <TouchableOpacity
+                      key={d.id}
+                      style={[
+                        styles.dumpsterOption,
+                        selectedDumpsterId === d.id && styles.dumpsterOptionSelected,
+                      ]}
+                      onPress={() => setSelectedDumpsterId(d.id)}
+                    >
+                      <Text
+                        style={
+                          selectedDumpsterId === d.id
+                            ? styles.dumpsterOptionTextSelected
+                            : styles.dumpsterOptionText
+                        }
+                      >
+                        {d.code}
+                      </Text>
+                    </TouchableOpacity>
+                  ))
+                )}
+              </View>
+            )}
+
             {workOrder.status === 'PENDING' && (
               <TouchableOpacity
-                style={styles.startButton}
+                style={[
+                  styles.startButton,
+                  needsDriverDumpsterChoice && !selectedDumpsterId && styles.startButtonDisabled,
+                ]}
                 onPress={handleStart}
-                disabled={starting}
+                disabled={starting || (needsDriverDumpsterChoice && !selectedDumpsterId)}
               >
                 {starting ? (
                   <ActivityIndicator color="#fff" />
@@ -570,6 +653,30 @@ const styles = StyleSheet.create({
   startButtonText: {
     color: '#fff',
     fontSize: 18,
+    fontFamily: 'Inter_700Bold',
+  },
+  startButtonDisabled: {
+    backgroundColor: '#94a3b8',
+  },
+  dumpsterOption: {
+    padding: 14,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    marginBottom: 8,
+  },
+  dumpsterOptionSelected: {
+    borderColor: '#0ea5e9',
+    backgroundColor: '#e0f2fe',
+  },
+  dumpsterOptionText: {
+    fontSize: 16,
+    color: '#333',
+    fontFamily: 'Inter_600SemiBold',
+  },
+  dumpsterOptionTextSelected: {
+    fontSize: 16,
+    color: '#0369a1',
     fontFamily: 'Inter_700Bold',
   },
   section: {

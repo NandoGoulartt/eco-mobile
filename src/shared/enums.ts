@@ -15,6 +15,7 @@ export enum CustomerType {
 
 export enum DumpsterStatus {
   AVAILABLE = 'AVAILABLE',
+  RESERVED = 'RESERVED',
   IN_USE = 'IN_USE',
   IN_TRANSIT = 'IN_TRANSIT',
   MAINTENANCE = 'MAINTENANCE',

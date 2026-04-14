@@ -142,7 +142,7 @@ export interface CreateWorkOrderDto {
   type: WorkOrderType;
   driverId: string;
   vehicleId: string;
-  dumpsterId: string;
+  dumpsterId?: string;
   jobSiteId?: string;
   yardId?: string;
   scheduledAt?: Date;
